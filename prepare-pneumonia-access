@@ -1,0 +1,66 @@
+import pandas as pd
+import glob
+import os
+
+def prepara_dataset_qgis(cartella_input):
+    print("Ricerca dei file CSV in corso...")
+    # Trova tutti i file csv che iniziano con 'accessi_polmoniti'
+    pattern = os.path.join(cartella_input, 'accessi_polmoniti_*.csv')
+    lista_file = glob.glob(pattern)
+    
+    if not lista_file:
+        print("Nessun file trovato! Assicurati che i file CSV siano nella cartella corretta.")
+        return
+    
+    lista_df = []
+    
+    # Legge tutti i file trovati
+    for file in lista_file:
+        print(f"Caricamento: {file}")
+        df_temp = pd.read_csv(file)
+        lista_df.append(df_temp)
+        
+    # 1. Concatena tutti i dataframe in uno solo
+    df_completo = pd.concat(lista_df, ignore_index=True)
+    
+    # 2. Rimuove eventuali duplicati dovuti alla sovrapposizione dei report
+    # Se una stessa ATS per una stessa Settimana è presente due volte, teniamo l'ultima
+    df_completo = df_completo.drop_duplicates(subset=['ATS', 'Settimana'], keep='last')
+    
+    # 3. Trasformazione in formato Long (Melt)
+    # Identifichiamo le colonne degli anni (es. '2022', '2023', '2024', '2025')
+    colonne_id = ['ATS', 'Settimana']
+    colonne_anni = [col for col in df_completo.columns if col not in colonne_id]
+    
+    df_melted = df_completo.melt(
+        id_vars=colonne_id, 
+        value_vars=colonne_anni,
+        var_name='Anno', 
+        value_name='Casi_Polmonite'
+    )
+    
+    # Assicuriamoci che Anno e Settimana siano numerici per poterli ordinare correttamente
+    df_melted['Anno'] = pd.to_numeric(df_melted['Anno'])
+    df_melted['Settimana'] = pd.to_numeric(df_melted['Settimana'])
+    
+    # 4. Ordinamento finale per avere una serie storica pulita
+    df_finale = df_melted.sort_values(by=['ATS', 'Anno', 'Settimana']).reset_index(drop=True)
+    
+    # 5. Salvataggio del file pronto per QGIS
+    nome_file_output = 'Dataset_Polmoniti_ATS_Pronto_Per_QGIS.csv'
+    df_finale.to_csv(nome_file_output, index=False)
+    
+    print(f"\nOperazione completata con successo!")
+    print(f"Righe totali processate: {len(df_finale)}")
+    print(f"File salvato come: {nome_file_output}")
+    
+    return df_finale
+
+# --- ESECUZIONE ---
+# Usa '.' se i file CSV sono nella stessa cartella dello script
+dataset = prepara_dataset_qgis(cartella_input='.')
+
+# Mostra un'anteprima dei dati finali
+if dataset is not None:
+    print("\nAnteprima dei dati:")
+    print(dataset.head(10))
