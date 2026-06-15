@@ -6,7 +6,7 @@ import pandas as pd
 # -----------------------------------
 
 temp_weights = pd.read_csv(
-    r"C:\Users\Mariam Saad\Desktop\hUMAN hEALTH\PYTHON\temperature_weights.csv"
+    "temperature_weights.csv"
 )
 
 sensor_ids = temp_weights["IdSensore"].dropna().astype(int).unique()
@@ -18,15 +18,22 @@ sensor_ids = ",".join(
 # -----------------------------------
 # DOWNLOAD DATA
 # -----------------------------------
+# Modify the dates below to match the
+# study period of interest.
+#
+# Example:
+# 2022:
+# data >= '2021-12-28T00:00:00'
+# data <= '2022-05-25T23:59:59'
 
 all_data = []
 
-for offset in range(0, 4000000, 500000):
+for offset in range(0, 5000000, 500000):
 
     url = (
         "https://www.dati.lombardia.it/resource/w9wd-u6jh.json?"
-        "$where=data >= '2026-01-12T00:00:00' "
-        "AND data <= '2026-04-19T23:59:59' "
+        "$where=data >= '2021-12-28T00:00:00' "
+        "AND data <= '2022-05-25T23:59:59' "
         f"AND idsensore IN({sensor_ids}) "
         f"&$limit=500000&$offset={offset}"
     )
@@ -46,19 +53,24 @@ for offset in range(0, 4000000, 500000):
 # MERGE ALL CHUNKS
 # -----------------------------------
 
-temp_2026 = pd.concat(all_data, ignore_index=True)
+temp_2022 = pd.concat(all_data, ignore_index=True)
 
-print(len(temp_2026))
-print(temp_2026.head())
+print(len(temp_2022))
+print(temp_2022.head())
 
 # -----------------------------------
 # SAVE CSV
 # -----------------------------------
-
-temp_2026.to_csv(
-    "temperature_2026.csv",
+# -----------------------------------
+# SAVE CSV
+# -----------------------------------
+#
+# Update filename to match the year
+# being downloaded.
+temp_2022.to_csv(
+    "temperature_2022.csv",
     index=False
 )
 
-print(temp_2026["data"].min())
-print(temp_2026["data"].max())
+print(temp_2022["data"].min())
+print(temp_2022["data"].max())
