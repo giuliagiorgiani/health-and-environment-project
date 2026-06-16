@@ -1,0 +1,9 @@
+pandas
+numpy
+statsmodels
+matplotlib
+geopandas
+seaborn
+scikit-learn
+libpysal
+esda
