@@ -27,12 +27,13 @@ Final Environment-Health Panel
       │       • Demographic models
       │       • Lag assessment
       │
-      ├─► Step 4: Final Analysis
+      ├─► Step 4: Final Analysis & Validation
       │       • Full model
       │       • Reduced model
       │       • Model selection
-      │       • Incidence Rate Ratios (IRRs)
-      │       • Diagnostics
+      │       • Temporal validation
+      │       • Spatial diagnostics
+      │       • Calibrated risk index
       │
       ├─► Step 5: Forest Plot
       │
@@ -40,6 +41,7 @@ Final Environment-Health Panel
               • Environmental indicators
               • Demographic indicators
               • Respiratory outcomes
+              • Calibrated risk
 ```
 
 ---
@@ -52,17 +54,20 @@ Final Environment-Health Panel
 * statsmodels
 * matplotlib
 * geopandas
+* libpysal
+* esda
+* scikit-learn
 
 Install dependencies:
 
 ```bash
-pip install pandas numpy statsmodels matplotlib geopandas
+pip install pandas numpy statsmodels matplotlib geopandas libpysal esda scikit-learn
 ```
 
 Windows users may use:
 
 ```bash
-py -m pip install pandas numpy statsmodels matplotlib geopandas
+py -m pip install pandas numpy statsmodels matplotlib geopandas libpysal esda scikit-learn
 ```
 
 ---
@@ -286,6 +291,31 @@ final_model_irr.csv
 final_model_diagnostics.csv
 final_model_summary.csv
 ```
+### Temporal Validation
+**File:** `4b_temporal_validation.py`
+Purpose: Verify the true predictive capacity of the model on unseen data (Out-of-Sample Validation). The dataset is split into a Training Set (2022-2024) to estimate coefficients and a Test Set (2025-2026) to generate predictions. Standard error metrics (RMSE, MAE, R-squared) are calculated to ensure the model isn't overfitting and to confirm its reliability for future simulations.
+
+Outputs:
+```text
+temporal_validation_metrics.csv
+```
+
+### Spatial Diagnostics
+**File:** `4c_spatial_diagnostics.py`
+Purpose: Identify any systematic geographic errors in the model through spatial residual analysis. Utilizes geopandas and libpysal to calculate the spatial weights matrix (Queen contiguity) and the Global Moran's I on the model's Pearson residuals. This assessment determines whether the model's prediction errors are randomly distributed across space or exhibit significant spatial autocorrelation.
+
+Outputs:
+```text
+spatial_residuals_map.png
+```
+### Calibrated Risk Index
+**File:** `4d_calibrated_risk_index.py`
+Purpose: Replace hardcoded decision weights with a data-driven Risk Index based on the actual coefficients (β) learned by the model. Uses the linear predictor of the Poisson model to calculate the combined multiplicative effect of pollution, climate, and demographics on baseline risk. Absolute risk is calculated for each polygon/week and normalized on a 0 to 100 scale, transforming statistical output into a highly interpretable management tool.
+
+Outputs:
+```text
+calibrated_risk_index.csv
+```
 
 ---
 
@@ -325,6 +355,12 @@ Female_Map.png
 Elderly_Map.png
 Child_Map.png
 ```
+**File:** `6b_map_calibrated_risk.py`
+Purpose: Spatially visualize the areas with the highest structural risk according to the model's objective estimates. Merges the aggregated results from calibrated_risk_index.csv with the spatial geometries of the .shp file (e.g., Voronoi polygons). Generates a choropleth map illustrating the distribution of average risk, allowing decision-makers to visually identify city "hotspots" of chronic respiratory vulnerability at a glance.
+Outputs:
+```text
+Calibrated_Risk_Map.png
+```
 
 ---
 
@@ -337,8 +373,12 @@ python 1_prepare_model_data.py
 python 2_model_type_comparison.py
 python 3_model_development.py
 python 4_final_analysis.py
+python 4b_temporal_validation.py
+python 4c_spatial_diagnostics_lisa.py
+python 4d_calibrated_risk_index.py
 python 5_forest_plot.py
 python 6_create_maps.py
+python 6b_map_calibrated_risk.py
 ```
 
 Windows users may replace `python` with `py`.
@@ -347,17 +387,20 @@ Windows users may replace `python` with `py`.
 
 ## Key Outputs
 
-| File                             | Description                          |
-| -------------------------------- | ------------------------------------ |
-| model_dataset.csv                | Final modelling dataset              |
-| model_type_comparison.csv        | Comparison of model families         |
-| development_model_comparison.csv | Model development comparison         |
-| lag_model_comparison.csv         | Lag assessment comparison            |
-| final_model_comparison.csv       | Full versus reduced model comparison |
-| final_model_coefficients.csv     | Final coefficient estimates          |
-| final_model_irr.csv              | Incidence Rate Ratios                |
-| final_model_diagnostics.csv      | Final model diagnostics              |
-| forest_plot_final_model.png      | Forest plot of adjusted IRRs         |
+| File                             | Description                             |
+|----------------------------------|-----------------------------------------|
+| model_dataset.csv                | Final modelling dataset                 |
+| model_type_comparison.csv        | Comparison of model families            |
+| development_model_comparison.csv | Model development comparison            |
+| lag_model_comparison.csv         | Lag assessment comparison               |
+| final_model_comparison.csv       | Full versus reduced model comparison    |
+| final_model_coefficients.csv     | Final coefficient estimates             |
+| final_model_irr.csv              | Incidence Rate Ratios                   |
+| final_model_diagnostics.csv      | Final model diagnostics                 |
+| temporal_validation_metrics.csv  | Out-of-sample error metrics             |
+| calibrated_risk_index.csv        | Normalized risk index based on actual β |
+| forest_plot_final_model.png      | Forest plot of adjusted IRRs            |
+| Calibrated_Risk_Map.png          | Structural risk distribution map        |
 
 ---
 
