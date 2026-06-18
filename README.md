@@ -1,8 +1,7 @@
-# Air Temperature Syndromic Surveillance (ATS)
+# Spatiotemporal Risk Assessment of Respiratory Syndromes in Lombardy: A Data-Driven Approach to Winter and Spring Dynamics
+hhds-lab-3
 
-A repository for analysing the relationship between air quality, meteorological conditions, land use, demographic vulnerability, and respiratory syndromes.
-
-The project is organised into two main components:
+The repository is organised into two main components:
 
 ```text
 ATS/
