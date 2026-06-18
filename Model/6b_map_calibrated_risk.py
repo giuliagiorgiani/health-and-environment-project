@@ -48,7 +48,7 @@ gdf_map.plot(
     ax=ax
 )
 
-ax.set_title("Mappa dell'Indice di Rischio Respiratorio Calibrato", fontsize=16, fontweight='bold', pad=15)
+ax.set_title("Map of Calibrated Respiratory Index", fontsize=16, fontweight='bold', pad=15)
 ax.axis('off')  # Rimuove le coordinate degli assi per un look più pulito
 
 plt.tight_layout()
